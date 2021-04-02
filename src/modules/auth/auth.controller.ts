@@ -20,4 +20,10 @@ export class AuthController {
   login(@Body() user: UserDto) {
     return this.authService.login(user);
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('/query')
+  fetch() {
+    return {};
+  }
 }
