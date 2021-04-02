@@ -25,10 +25,18 @@ export class TasksService {
     device_code:
       '[w]00:81:0e:1b:c4:b0-[i]865166021747665-[s]89860037810647646094',
     count: 20,
+    // 频道
     cat_id: 56,
+    // 类型: 全部0 ; 原创5601 ' 网络5602  == 对应真实字段tagid
     tag_id: 0,
+    // 排序: 回复时间0 ;按发布时间 1 ;  按版本精华2 == 对应真实字段createTime和activeTime
     sort_by: 0,
     start: 0,
+  };
+
+  static readonly USER = {
+    username: 'SH',
+    password: '123456',
   };
 
   private readonly dstpath = './images';
@@ -60,7 +68,11 @@ export class TasksService {
         const b = x.data.posts[index];
         let user = new XuserEntity();
         let article = new XarticleEntity();
-        user = b.user;
+
+        user = Object.assign(b.user, {
+          username: TasksService.USER.username,
+          password: TasksService.USER.password,
+        });
 
         b.detail = `${b.detail}`;
         article = {

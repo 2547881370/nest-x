@@ -7,6 +7,12 @@ export class XuserEntity {
   userID: number;
 
   @Column()
+  username: string;
+
+  @Column()
+  password: string;
+
+  @Column()
   nick: string;
 
   @Column()

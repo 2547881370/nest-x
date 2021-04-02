@@ -4,6 +4,7 @@ import { TasksModule } from './tasks/x/tasks.module';
 import { ConfigModule, ConfigService } from 'nestjs-config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { resolve } from 'path';
+import { AuthModule } from './modules/auth/auth.module';
 @Module({
   imports: [
     ConfigModule.load(resolve(__dirname, 'config', '**/!(*.d).{ts,js}')),
@@ -13,6 +14,7 @@ import { resolve } from 'path';
     }),
     ScheduleModule.forRoot(),
     TasksModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
