@@ -16,7 +16,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       // 密钥
       secret: jwtConstants.secret,
       // jwt过期时间
-      signOptions: { expiresIn: '60s' },
+      // signOptions: { expiresIn: '60s' },
     }),
     TypeOrmModule.forFeature([XuserEntity]),
   ],

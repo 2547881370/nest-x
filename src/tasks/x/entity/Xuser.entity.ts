@@ -12,43 +12,43 @@ export class XuserEntity {
   @Column()
   password: string;
 
-  @Column()
+  @Column({ default: null })
   nick: string;
 
-  @Column()
+  @Column({ default: null })
   avatar: string;
 
-  @Column('int')
+  @Column({ default: null, type: 'int' })
   gender: number;
 
-  @Column('int')
+  @Column({ default: null, type: 'int' })
   age: number;
 
-  @Column('int')
+  @Column({ default: null, type: 'int' })
   role: number;
 
-  @Column('int')
+  @Column({ default: null, type: 'int' })
   experience: number;
 
-  @Column('int')
+  @Column({ default: null, type: 'int' })
   credits: number;
 
-  @Column()
+  @Column({ default: null })
   identityTitle: string;
 
-  @Column('bigint')
+  @Column({ default: null, type: 'bigint' })
   identityColor: number;
 
-  @Column('int')
+  @Column({ default: null, type: 'int' })
   level: number;
 
-  @Column('int')
+  @Column({ default: null, type: 'int' })
   levelColor: number;
 
-  @Column('int')
+  @Column({ default: null, type: 'int' })
   integral: number;
 
-  @Column('int')
+  @Column({ default: null, type: 'int' })
   uuid: number;
 
   @Column({ type: 'varchar', length: 200, nullable: true })

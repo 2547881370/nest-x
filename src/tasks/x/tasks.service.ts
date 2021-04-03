@@ -1,6 +1,6 @@
 import { HttpService, Injectable, Logger } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
-import { TaskParams } from './interface/task.interface';
+import { TaskDetailedParams, TaskParams } from './interface/task.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { XarticleEntity } from './entity/Xarticle.entity';
 import { Connection, Repository } from 'typeorm';
@@ -10,6 +10,11 @@ import { XimageEntity } from './entity/Ximage.entity';
 
 import { createWriteStream, existsSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
+import { XdetailedResponse } from './interface/xdetailedResponse.interface';
+
+import { map } from 'rxjs/operators';
+import { XcommentsEntity } from './entity/Xcomments.entity';
+import { XdetailedEntity } from './entity/Xdetailed.entity';
 
 @Injectable()
 export class TasksService {
@@ -34,6 +39,23 @@ export class TasksService {
     start: 0,
   };
 
+  private readonly DetailedParams: TaskDetailedParams = {
+    platform: 2,
+    gkey: '000000',
+    app_version: '4.0.0.1.2',
+    versioncode: '20141417',
+    market_id: 'floor_web',
+    _key: '',
+    device_code:
+      '[w]00:81:0e:1b:c4:b0-[i]865166021747665-[s]89860037810647646094',
+    // 当前文章id
+    post_id: null,
+    // 当前文章评论总共有多少页 可以通过文章的 Math.ceil(commentCount/20)
+    page_no: 1,
+    page_size: 20,
+    doc: 1,
+  };
+
   static readonly USER = {
     username: 'SH',
     password: '123456',
@@ -46,6 +68,8 @@ export class TasksService {
     @InjectRepository(XarticleEntity)
     private readonly xarticleRepository: Repository<XarticleEntity>,
     private connection: Connection,
+    @InjectRepository(XdetailedEntity)
+    private readonly XdetailedRepository: Repository<XdetailedEntity>,
   ) {}
 
   @Interval(10000)
@@ -112,6 +136,9 @@ export class TasksService {
         await queryRunner.startTransaction();
         try {
           await this.xarticleRepository.save(article);
+          // 入库评论
+          // await this.handerPostComment(b.postID, Math.ceil(b.commentCount / 20));
+          await this.handerPostComment(b.postID, 1);
         } catch (err) {
           await queryRunner.rollbackTransaction();
         } finally {
@@ -143,5 +170,56 @@ export class TasksService {
       }
     }
     return false;
+  }
+
+  async handerPostComment(postId: number, pageNo: number): Promise<any> {
+    this.DetailedParams.post_id = postId;
+    this.DetailedParams.page_no = pageNo;
+
+    return this.httpService
+      .get<XdetailedResponse>(
+        'http://floor.huluxia.com/post/detail/ANDROID/2.3',
+        {
+          params: this.DetailedParams,
+          headers: {
+            Connection: 'close',
+            Host: 'floor.huluxia.com',
+            'User-Agent': 'okhttp/3.8.1',
+          },
+        },
+      )
+      .pipe(
+        map(async (response) => {
+          let post = new XarticleEntity();
+          post = response.data.post;
+
+          let comments = [];
+          for (let index = 0; index < response.data.comments.length; index++) {
+            const b = response.data.comments[index];
+            let comment = new XcommentsEntity();
+            comment = b;
+            const images = [];
+            for (let imgIndex = 0; imgIndex < b.images.length; imgIndex++) {
+              const imgUrl = b.images[imgIndex];
+              await this.downloadPic(imgUrl);
+              images.push({
+                url: imgUrl,
+              });
+            }
+            comment.images = images;
+            comments.push(comment);
+          }
+
+          const detailed = new XdetailedEntity();
+          detailed.posts = post;
+          detailed.comments = comments = comments.map((b) => {
+            b.posts = detailed;
+            return b;
+          });
+          await this.XdetailedRepository.save(detailed);
+          return response.data;
+        }),
+      )
+      .toPromise();
   }
 }

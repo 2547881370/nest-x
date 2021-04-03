@@ -23,7 +23,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('/query')
-  fetch() {
-    return {};
+  fetch(@Body() user: UserDto) {
+    return this.authService.createUser(user);
   }
 }

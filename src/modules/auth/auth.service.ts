@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { XuserEntity } from 'src/tasks/x/entity/Xuser.entity';
 import { Repository } from 'typeorm';
 import { UserDto } from './dto/user.dto';
+import { ForbiddenException } from '../../common/exception/forbidden.exception';
+
+type CreateUserType = XuserEntity;
 
 @Injectable()
 export class AuthService {
@@ -15,19 +18,80 @@ export class AuthService {
 
   async login(user: UserDto): Promise<any> {
     const payload = { username: user.username, sub: user.password };
+
+    if (!user.password || !user.username) {
+      throw new ForbiddenException({
+        code: HttpStatus.UNAUTHORIZED,
+        msg: '参数异常',
+      });
+    }
+
+    const p = await this.xuserRepository.findOne({
+      where: {
+        password: user.password,
+        username: user.username,
+      },
+    });
+
+    if (!p) {
+      throw new ForbiddenException({
+        code: HttpStatus.OK,
+        msg: '无效用户',
+      });
+    }
+
     return {
-      access_token: this.jwtService.sign(payload),
+      token: this.jwtService.sign(payload),
+      ...p,
     };
   }
 
   async validateUser(params: UserDto): Promise<any> {
     const { password, username } = params;
+    if (!password || !username) {
+      throw new ForbiddenException({
+        code: HttpStatus.UNAUTHORIZED,
+        msg: '参数异常',
+      });
+    }
+
     const p = await this.xuserRepository.find({
       where: {
         password,
         username,
       },
     });
+
     return p;
+  }
+
+  async createUser(params: UserDto): Promise<CreateUserType> {
+    const { password, username } = params;
+    if (!password || !username) {
+      throw new ForbiddenException({
+        code: HttpStatus.UNAUTHORIZED,
+        msg: '参数异常',
+      });
+    }
+    const p = await this.xuserRepository.findOne({
+      where: {
+        password,
+        username,
+      },
+    });
+    if (p) {
+      throw new ForbiddenException({
+        code: HttpStatus.OK,
+        msg: '用户已存在',
+      });
+    }
+    const user = new XuserEntity();
+    user.password = password;
+    user.username = username;
+
+    const isHanderCreateUser = await this.xuserRepository.save(user);
+    if (isHanderCreateUser) {
+      return isHanderCreateUser;
+    }
   }
 }

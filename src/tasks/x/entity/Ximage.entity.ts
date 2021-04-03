@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { XarticleEntity } from './Xarticle.entity';
+import { XcommentsEntity } from './Xcomments.entity';
 
 @Entity()
 export class XimageEntity {
@@ -13,4 +14,9 @@ export class XimageEntity {
     onDelete: 'CASCADE',
   })
   article: XarticleEntity;
+
+  @ManyToOne((type) => XcommentsEntity, (comments) => comments.images, {
+    onDelete: 'CASCADE',
+  })
+  comments: XcommentsEntity;
 }
