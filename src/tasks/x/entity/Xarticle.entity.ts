@@ -14,10 +14,10 @@ export class XarticleEntity implements XarticleInterface {
   @PrimaryGeneratedColumn()
   postID: number;
 
-  @Column()
+  @Column({ type: 'text' })
   title: string;
 
-  @Column({ type: 'varchar', length: 9999 })
+  @Column({ type: 'text' })
   detail: string;
 
   @Column('int')

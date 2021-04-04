@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from 'nestjs-config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { resolve } from 'path';
 import { AuthModule } from './modules/auth/auth.module';
+import { PostsModule } from './modules/posts/posts.module';
 @Module({
   imports: [
     ConfigModule.load(resolve(__dirname, 'config', '**/!(*.d).{ts,js}')),
@@ -13,8 +14,9 @@ import { AuthModule } from './modules/auth/auth.module';
       inject: [ConfigService],
     }),
     ScheduleModule.forRoot(),
-    TasksModule,
+    // TasksModule,
     AuthModule,
+    PostsModule,
   ],
   controllers: [],
   providers: [],

@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { XarticleEntity } from './Xarticle.entity';
+import { XcommentsEntity } from './Xcomments.entity';
 
 @Entity()
 export class XuserEntity {
@@ -12,7 +13,7 @@ export class XuserEntity {
   @Column()
   password: string;
 
-  @Column({ default: null })
+  @Column({ default: null, type: 'varchar' })
   nick: string;
 
   @Column({ default: null })
@@ -42,8 +43,8 @@ export class XuserEntity {
   @Column({ default: null, type: 'int' })
   level: number;
 
-  @Column({ default: null, type: 'int' })
-  levelColor: number;
+  @Column({ default: null, type: 'text' })
+  levelColor: string;
 
   @Column({ default: null, type: 'int' })
   integral: number;
@@ -51,11 +52,16 @@ export class XuserEntity {
   @Column({ default: null, type: 'int' })
   uuid: number;
 
-  @Column({ type: 'varchar', length: 200, nullable: true })
+  @Column({ type: 'text', nullable: true })
   integralNick: string;
 
   @OneToMany((type) => XarticleEntity, (xarticle) => xarticle.user, {
     onDelete: 'CASCADE',
   })
   articles: XarticleEntity[];
+
+  @OneToMany((type) => XcommentsEntity, (xarticle) => xarticle.user, {
+    onDelete: 'CASCADE',
+  })
+  postComment: XcommentsEntity[];
 }

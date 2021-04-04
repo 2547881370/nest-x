@@ -3,7 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { UserDto } from './dto/user.dto';
-import { UserEntity } from './entities/user.entity';
+import { UserEntitie } from './entities/user.entitie';
 
 @ApiBearerAuth()
 @ApiTags('auth')
@@ -15,7 +15,7 @@ export class AuthController {
   @Post('/login')
   @ApiResponse({
     status: 200,
-    type: UserEntity,
+    type: UserEntitie,
   })
   login(@Body() user: UserDto) {
     return this.authService.login(user);

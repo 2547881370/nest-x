@@ -16,7 +16,7 @@ export class XcommentsEntity {
   @PrimaryGeneratedColumn()
   commentID: number;
 
-  @Column()
+  @Column({ type: 'varchar' })
   text: string;
 
   @OneToMany((type) => XimageEntity, (ximage) => ximage.comments, {
@@ -47,9 +47,12 @@ export class XcommentsEntity {
   @Column()
   state: number;
 
-  // @OneToOne(() => XuserEntity)
-  // @JoinColumn()
-  // user: XuserEntity;
+  @ManyToOne(() => XuserEntity, (user) => user.postComment, {
+    cascade: true,
+    // cascade: ['insert', 'update', 'remove'],
+    onDelete: 'CASCADE',
+  })
+  user: XuserEntity;
 
   @Column()
   scoreUserCount: number;

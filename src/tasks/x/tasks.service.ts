@@ -140,6 +140,7 @@ export class TasksService {
           // await this.handerPostComment(b.postID, Math.ceil(b.commentCount / 20));
           await this.handerPostComment(b.postID, 1);
         } catch (err) {
+          this.logger.debug(err);
           await queryRunner.rollbackTransaction();
         } finally {
           await queryRunner.release();
@@ -191,7 +192,13 @@ export class TasksService {
       .pipe(
         map(async (response) => {
           let post = new XarticleEntity();
+          let postUser = new XuserEntity();
+          postUser = Object.assign(response.data.post.user, {
+            username: TasksService.USER.username,
+            password: TasksService.USER.password,
+          });
           post = response.data.post;
+          post.user = postUser;
 
           let comments = [];
           for (let index = 0; index < response.data.comments.length; index++) {
@@ -206,6 +213,12 @@ export class TasksService {
                 url: imgUrl,
               });
             }
+            let user = new XuserEntity();
+            user = Object.assign(b.user, {
+              username: TasksService.USER.username,
+              password: TasksService.USER.password,
+            });
+            comment.user = user;
             comment.images = images;
             comments.push(comment);
           }
