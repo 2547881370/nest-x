@@ -104,6 +104,13 @@ export class PostsService {
     });
     p.posts = find;
 
+    await getConnection()
+      .createQueryBuilder()
+      .update(XarticleEntity)
+      .set({ hit: find.hit + 1 })
+      .where('postID = :postID', { postID: postId })
+      .execute();
+
     return p;
   }
 
@@ -127,7 +134,10 @@ export class PostsService {
     const p = await getConnection()
       .createQueryBuilder()
       .update(XarticleEntity)
-      .set({ praise: article.praise + count })
+      .set({
+        praise: article.praise + count,
+        activeTime: Date.now(),
+      })
       .where('postID = :postID', { postID: postId })
       .execute();
 
