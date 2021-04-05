@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { resolve } from 'path';
 import { AuthModule } from './modules/auth/auth.module';
 import { PostsModule } from './modules/posts/posts.module';
+import { UpdateAppModule } from './modules/update-app/update-app.module';
 @Module({
   imports: [
     ConfigModule.load(resolve(__dirname, 'config', '**/!(*.d).{ts,js}')),
@@ -17,6 +18,7 @@ import { PostsModule } from './modules/posts/posts.module';
     // TasksModule,
     AuthModule,
     PostsModule,
+    UpdateAppModule,
   ],
   controllers: [],
   providers: [],

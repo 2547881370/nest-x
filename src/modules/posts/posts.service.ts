@@ -41,7 +41,7 @@ export class PostsService {
       sort_by = SortBy.activeTime,
     } = options;
 
-    let queryForm = { relations: ['user'], take: limit, skip: page };
+    let queryForm = { relations: ['user', 'images'], take: limit, skip: page };
     if (sort_by === SortBy.activeTime) {
       queryForm = Object.assign(queryForm, {
         order: {
@@ -97,7 +97,7 @@ export class PostsService {
     }
 
     const find = await this.xarticleRepository.findOne({
-      relations: ['user'],
+      relations: ['user', 'images'],
       where: {
         postID: postId,
       },
