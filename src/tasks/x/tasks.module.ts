@@ -7,6 +7,7 @@ import { XarticleEntity } from './entity/Xarticle.entity';
 import { XimageEntity } from './entity/Ximage.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { XdetailedEntity } from './entity/Xdetailed.entity';
+import { XPostsListStartEntity } from './entity/XpostsListStart.entity';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { XdetailedEntity } from './entity/Xdetailed.entity';
       XimageEntity,
       XdetailedEntity,
       XcommentsEntity,
+      XPostsListStartEntity,
     ]),
     HttpModule,
   ],

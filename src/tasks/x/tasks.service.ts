@@ -3,7 +3,7 @@ import { Interval } from '@nestjs/schedule';
 import { TaskDetailedParams, TaskParams } from './interface/task.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { XarticleEntity } from './entity/Xarticle.entity';
-import { Connection, Repository } from 'typeorm';
+import { Connection, getConnection, Repository } from 'typeorm';
 import { XarticleResponseInterface } from './interface/xarticleResponse.interface';
 import { XuserEntity } from './entity/Xuser.entity';
 import { XimageEntity } from './entity/Ximage.entity';
@@ -15,6 +15,7 @@ import { XdetailedResponse } from './interface/xdetailedResponse.interface';
 import { map } from 'rxjs/operators';
 import { XcommentsEntity } from './entity/Xcomments.entity';
 import { XdetailedEntity } from './entity/Xdetailed.entity';
+import { XPostsListStartEntity } from './entity/XpostsListStart.entity';
 
 @Injectable()
 export class TasksService {
@@ -70,10 +71,17 @@ export class TasksService {
     private connection: Connection,
     @InjectRepository(XdetailedEntity)
     private readonly XdetailedRepository: Repository<XdetailedEntity>,
+    @InjectRepository(XPostsListStartEntity)
+    private readonly xPostsListStartEntity: Repository<XPostsListStartEntity>,
   ) {}
 
   @Interval(10000)
   async handerPosts() {
+    const postListStart = await this.xPostsListStartEntity.findOne();
+    if (postListStart) {
+      const { start } = postListStart;
+      this.params.start = start;
+    }
     const obs = await this.httpService.get<XarticleResponseInterface>(
       'http://floor.huluxia.com/post/list/ANDROID/2.1',
       {
@@ -88,6 +96,25 @@ export class TasksService {
 
     obs.subscribe(async (x) => {
       this.params.start = x.data.start;
+
+      if (!postListStart) {
+        const newPostListStart = new XPostsListStartEntity();
+        newPostListStart.start = x.data.start;
+        await this.xPostsListStartEntity.save(newPostListStart);
+      } else {
+        postListStart.start = x.data.start;
+        await getConnection()
+          .createQueryBuilder()
+          .update(XPostsListStartEntity)
+          .set({
+            start: x.data.start,
+          })
+          .where('startID = :startID', { startID: postListStart.startID })
+          .execute();
+      }
+
+      this.logger.debug(postListStart.start);
+
       for (let index = 0; index < x.data.posts.length; index++) {
         const b = x.data.posts[index];
         let user = new XuserEntity();
@@ -111,7 +138,9 @@ export class TasksService {
           const newImg = new XimageEntity();
           newImg.url = imageUrl;
           newImg.article = article;
-          await this.downloadPic(imageUrl);
+          // try {
+          //   await this.downloadPic(imageUrl);
+          // } catch (err) {}
           images.push(newImg);
         }
 
@@ -150,15 +179,21 @@ export class TasksService {
   }
 
   async downloadPic(src: string) {
-    return new Promise<void>(async (_resolve) => {
-      this._mkdirSync(this.dstpath);
-      const obs = await this.httpService.get(src, { responseType: 'stream' });
-      obs.subscribe(async (x) => {
-        const target_path = resolve(`${this.dstpath}/${src.split('/').pop()}`);
-        await x.data.pipe(createWriteStream(target_path));
-        _resolve();
+    try {
+      return new Promise<void>(async (_resolve) => {
+        this._mkdirSync(this.dstpath);
+        const obs = await this.httpService.get(src, { responseType: 'stream' });
+        obs.subscribe(async (x) => {
+          const target_path = resolve(
+            `${this.dstpath}/${src.split('/').pop()}`,
+          );
+          await x.data.pipe(createWriteStream(target_path));
+          _resolve();
+        });
       });
-    });
+    } catch (err) {
+      this.logger.error(err);
+    }
   }
 
   _mkdirSync(_path) {
@@ -208,7 +243,9 @@ export class TasksService {
             const images = [];
             for (let imgIndex = 0; imgIndex < b.images.length; imgIndex++) {
               const imgUrl = b.images[imgIndex];
-              await this.downloadPic(imgUrl);
+              // try {
+              //   await this.downloadPic(imgUrl);
+              // } catch (err) {}
               images.push({
                 url: imgUrl,
               });
