@@ -22,7 +22,7 @@ export class AuthService {
     if (!user.password || !user.username) {
       throw new ForbiddenException({
         code: HttpStatus.UNAUTHORIZED,
-        msg: '参数异常',
+        message: '参数异常',
       });
     }
 
@@ -35,8 +35,8 @@ export class AuthService {
 
     if (!p) {
       throw new ForbiddenException({
-        code: HttpStatus.OK,
-        msg: '无效用户',
+        code: HttpStatus.CONFLICT,
+        message: '无效用户',
       });
     }
 
@@ -51,7 +51,7 @@ export class AuthService {
     if (!password || !username) {
       throw new ForbiddenException({
         code: HttpStatus.UNAUTHORIZED,
-        msg: '参数异常',
+        message: '参数异常',
       });
     }
 
@@ -70,7 +70,7 @@ export class AuthService {
     if (!password || !username) {
       throw new ForbiddenException({
         code: HttpStatus.UNAUTHORIZED,
-        msg: '参数异常',
+        message: '参数异常',
       });
     }
     const p = await this.xuserRepository.findOne({
@@ -81,8 +81,8 @@ export class AuthService {
     });
     if (p) {
       throw new ForbiddenException({
-        code: HttpStatus.OK,
-        msg: '用户已存在',
+        code: HttpStatus.CONFLICT,
+        message: '用户已存在',
       });
     }
     const user = new XuserEntity();

@@ -1,6 +1,7 @@
 import {
   CallHandler,
   ExecutionContext,
+  HttpStatus,
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
@@ -20,6 +21,7 @@ export class TransformInterceptor<T>
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<Response<T>> {
+    context.getArgs()[1].statusCode = HttpStatus.OK;
     return next.handle().pipe(
       map((data: T) => ({
         data: data,

@@ -21,7 +21,7 @@ export class AuthController {
     return this.authService.login(user);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('local'))
   @Post('/addUser')
   fetch(@Body() user: UserDto) {
     return this.authService.createUser(user);

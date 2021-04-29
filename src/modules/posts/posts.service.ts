@@ -72,7 +72,7 @@ export class PostsService {
     if (postId === undefined || postId === null) {
       throw new ForbiddenException({
         code: HttpStatus.UNAUTHORIZED,
-        msg: '参数异常',
+        message: '参数异常',
       });
     }
 
@@ -127,7 +127,7 @@ export class PostsService {
     if (!article) {
       throw new ForbiddenException({
         code: HttpStatus.UNAUTHORIZED,
-        msg: '参数异常',
+        message: '参数异常',
       });
     }
 
@@ -157,7 +157,7 @@ export class PostsService {
     if (p && status === PostsCollectionStatus.create) {
       throw new ForbiddenException({
         code: HttpStatus.UNAUTHORIZED,
-        msg: '已经收藏过了,请勿重复收藏',
+        message: '已经收藏过了,请勿重复收藏',
       });
     }
 

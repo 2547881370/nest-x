@@ -5,7 +5,8 @@ export interface CustomError {
   timestamp?: string;
   path?: string;
   error?: string;
-  msg: string;
+  message: string;
+  data?: any;
 }
 
 export class ForbiddenException<T extends CustomError> extends HttpException {
@@ -13,7 +14,7 @@ export class ForbiddenException<T extends CustomError> extends HttpException {
     super(
       {
         ...options,
-        message: options.msg,
+        message: options.message,
       },
       options.code,
     );
