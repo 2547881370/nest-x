@@ -88,6 +88,20 @@ export class AuthService {
     const user = new XuserEntity();
     user.password = password;
     user.username = username;
+    user.age = 0;
+    user.avatar = 'https://www.hualigs.cn/image/608b6afb4f20d.jpg';
+    user.nick = '';
+    user.gender = 0;
+    user.integralNick = '';
+    user.uuid = 0;
+    user.integral = 0;
+    user.levelColor = '';
+    user.level = 0;
+    user.identityColor = 0;
+    user.identityTitle = '';
+    user.credits = 0;
+    user.experience = 0;
+    user.role = 0;
 
     const isHanderCreateUser = await this.xuserRepository.save(user);
     if (isHanderCreateUser) {
