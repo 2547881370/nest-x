@@ -41,7 +41,11 @@ export class PostsService {
       sort_by = SortBy.activeTime,
     } = options;
 
-    let queryForm = { relations: ['user', 'images'], take: limit, skip: page };
+    let queryForm = {
+      relations: ['user', 'images'],
+      take: limit,
+      skip: limit * (page - 1),
+    };
     if (sort_by === SortBy.activeTime) {
       queryForm = Object.assign(queryForm, {
         order: {
