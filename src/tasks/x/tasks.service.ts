@@ -77,105 +77,111 @@ export class TasksService {
 
   @Interval(10000)
   async handerPosts() {
-    const postListStart = await this.xPostsListStartEntity.findOne();
-    if (postListStart) {
-      const { start } = postListStart;
-      this.params.start = start;
-    }
-    const obs = await this.httpService.get<XarticleResponseInterface>(
-      'http://floor.huluxia.com/post/list/ANDROID/2.1',
-      {
-        params: this.params,
-        headers: {
-          Connection: 'close',
-          Host: 'floor.huluxia.com',
-          'User-Agent': 'okhttp/3.8.1',
-        },
-      },
-    );
-
-    obs.subscribe(async (x) => {
-      this.params.start = x.data.start;
-
-      if (!postListStart) {
-        const newPostListStart = new XPostsListStartEntity();
-        newPostListStart.start = x.data.start;
-        await this.xPostsListStartEntity.save(newPostListStart);
-      } else {
-        postListStart.start = x.data.start;
-        await getConnection()
-          .createQueryBuilder()
-          .update(XPostsListStartEntity)
-          .set({
-            start: x.data.start,
-          })
-          .where('startID = :startID', { startID: postListStart.startID })
-          .execute();
+    try {
+      const postListStart = await this.xPostsListStartEntity.findOne();
+      if (postListStart) {
+        const { start } = postListStart;
+        this.params.start = start;
       }
-
-      this.logger.debug(postListStart.start);
-
-      for (let index = 0; index < x.data.posts.length; index++) {
-        const b = x.data.posts[index];
-        let user = new XuserEntity();
-        let article = new XarticleEntity();
-
-        user = Object.assign(b.user, {
-          username: TasksService.USER.username,
-          password: TasksService.USER.password,
-        });
-
-        b.detail = `${b.detail}`;
-        article = {
-          ...b,
-          user: user,
-        };
-
-        const images = [];
-
-        for (let imgIndex = 0; imgIndex < b.images.length; imgIndex++) {
-          const imageUrl = b.images[imgIndex];
-          const newImg = new XimageEntity();
-          newImg.url = imageUrl;
-          newImg.article = article;
-          // try {
-          //   await this.downloadPic(imageUrl);
-          // } catch (err) {}
-          images.push(newImg);
-        }
-
-        article.images = images;
-
-        const p = await this.xarticleRepository.find({
-          where: {
-            postID: article.postID,
+      const obs = await this.httpService.get<XarticleResponseInterface>(
+        'http://floor.huluxia.com/post/list/ANDROID/2.1',
+        {
+          params: this.params,
+          headers: {
+            Connection: 'close',
+            Host: 'floor.huluxia.com',
+            'User-Agent': 'okhttp/3.8.1',
           },
-        });
+        },
+      );
 
-        // 文章重复则跳过
-        if (p && p.length > 0) {
-          this.logger.debug('存在: ' + article.postID);
-          return false;
+      obs.subscribe(async (x) => {
+        this.params.start = x.data.start;
+
+        if (!postListStart) {
+          const newPostListStart = new XPostsListStartEntity();
+          newPostListStart.start = x.data.start;
+          await this.xPostsListStartEntity.save(newPostListStart);
+        } else {
+          postListStart.start = x.data.start;
+          await getConnection()
+            .createQueryBuilder()
+            .update(XPostsListStartEntity)
+            .set({
+              start: x.data.start,
+            })
+            .where('startID = :startID', { startID: postListStart.startID })
+            .execute();
         }
 
-        // 创建一个事务
-        const queryRunner = this.connection.createQueryRunner();
-        // 事务连接
-        await queryRunner.connect();
-        await queryRunner.startTransaction();
-        try {
-          await this.xarticleRepository.save(article);
-          // 入库评论
-          // await this.handerPostComment(b.postID, Math.ceil(b.commentCount / 20));
-          await this.handerPostComment(b.postID, 1);
-        } catch (err) {
-          this.logger.debug(err);
-          await queryRunner.rollbackTransaction();
-        } finally {
-          await queryRunner.release();
+        this.logger.debug(postListStart.start);
+
+        for (let index = 0; index < x.data.posts.length; index++) {
+          const b = x.data.posts[index];
+          let user = new XuserEntity();
+          let article = new XarticleEntity();
+
+          user = Object.assign(b.user, {
+            username: TasksService.USER.username,
+            password: TasksService.USER.password,
+          });
+
+          b.detail = `${b.detail}`;
+          article = {
+            ...b,
+            user: user,
+          };
+
+          const images = [];
+
+          for (let imgIndex = 0; imgIndex < b.images.length; imgIndex++) {
+            const imageUrl = b.images[imgIndex];
+            const newImg = new XimageEntity();
+            newImg.url = imageUrl;
+            newImg.article = article;
+            // try {
+            //   await this.downloadPic(imageUrl);
+            // } catch (err) {}
+            images.push(newImg);
+          }
+
+          article.images = images;
+
+          const p = await this.xarticleRepository.find({
+            where: {
+              postID: article.postID,
+            },
+          });
+
+          // 文章重复则跳过
+          if (p && p.length > 0) {
+            this.logger.debug('存在: ' + article.postID);
+            return false;
+          }
+
+          article.createTime = Date.now();
+
+          // 创建一个事务
+          const queryRunner = this.connection.createQueryRunner();
+          // 事务连接
+          await queryRunner.connect();
+          await queryRunner.startTransaction();
+          try {
+            await this.xarticleRepository.save(article);
+            // 入库评论
+            // await this.handerPostComment(b.postID, Math.ceil(b.commentCount / 20));
+            await this.handerPostComment(b.postID, 1);
+          } catch (err) {
+            this.logger.debug(err);
+            await queryRunner.rollbackTransaction();
+          } finally {
+            await queryRunner.release();
+          }
         }
-      }
-    });
+      });
+    } catch (err) {
+      this.logger.error(err);
+    }
   }
 
   async downloadPic(src: string) {

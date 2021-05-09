@@ -8,6 +8,8 @@ export interface XarticleInterface {
 
   detail: string;
 
+  voice: string;
+
   score: number;
 
   scoreTxt: string;

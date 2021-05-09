@@ -4,6 +4,8 @@ import { XuserEntity } from 'src/tasks/x/entity/Xuser.entity';
 import { XarticleInterface } from 'src/tasks/x/interface/xarticle.interface';
 
 export class PostsQueryEntitie implements XarticleInterface {
+  voice: string;
+
   postID: number;
 
   @ApiProperty({ description: '文章标题' })

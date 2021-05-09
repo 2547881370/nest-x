@@ -49,20 +49,20 @@ export class PostsService {
     if (sort_by === SortBy.activeTime) {
       queryForm = Object.assign(queryForm, {
         order: {
-          activeTime: 'ASC',
+          activeTime: 'DESC',
         },
       });
     } else {
       queryForm = Object.assign(queryForm, {
         order: {
-          createTime: 'ASC',
+          createTime: 'DESC',
         },
       });
     }
 
     if (tag_id !== TagId.arr) {
       queryForm = Object.assign(queryForm, {
-        tagid: tag_id,
+        where: { tagid: tag_id },
       });
     }
 

@@ -20,6 +20,9 @@ export class XarticleEntity implements XarticleInterface {
   @Column({ type: 'text' })
   detail: string;
 
+  @Column({ type: 'text', nullable: true })
+  voice: string;
+
   @Column('int')
   score: number;
 
