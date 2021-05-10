@@ -23,6 +23,10 @@ export class XarticleEntity implements XarticleInterface {
   @Column({ type: 'text', nullable: true })
   voice: string;
 
+  // 推荐等级为1的视为轮播图
+  @Column({ type: 'int', nullable: true })
+  recommendationLevel: number;
+
   @Column('int')
   score: number;
 

@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { XarticleEntity } from 'src/tasks/x/entity/Xarticle.entity';
 import { XdetailedEntity } from 'src/tasks/x/entity/Xdetailed.entity';
@@ -49,5 +49,10 @@ export class PostsController {
   @Post('/queryUserCollection')
   async queryUserCollection(@Body() request: PostsUserCollectionDto) {
     return this.postsService.queryUserCollection(request);
+  }
+
+  @Get('/getArticleCarouselMap')
+  async getArticleCarouselMap(): Promise<XarticleEntity[]> {
+    return this.postsService.getArticleCarouselMap();
   }
 }

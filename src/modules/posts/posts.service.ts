@@ -207,4 +207,15 @@ export class PostsService {
     });
     return p;
   }
+
+  async getArticleCarouselMap(): Promise<XarticleEntity[]> {
+    const queryForm = {
+      relations: ['user', 'images'],
+      where: {
+        recommendationLevel: 1,
+      },
+    };
+    const find = await this.xarticleRepository.find(queryForm);
+    return find;
+  }
 }

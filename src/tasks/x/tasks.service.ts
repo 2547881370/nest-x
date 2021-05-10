@@ -160,6 +160,7 @@ export class TasksService {
           }
 
           article.createTime = Date.now();
+          article.recommendationLevel = 0;
 
           // 创建一个事务
           const queryRunner = this.connection.createQueryRunner();

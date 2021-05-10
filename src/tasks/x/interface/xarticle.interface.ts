@@ -10,6 +10,8 @@ export interface XarticleInterface {
 
   voice: string;
 
+  recommendationLevel: number;
+
   score: number;
 
   scoreTxt: string;
