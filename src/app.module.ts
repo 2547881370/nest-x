@@ -15,7 +15,7 @@ import { UpdateAppModule } from './modules/update-app/update-app.module';
       inject: [ConfigService],
     }),
     ScheduleModule.forRoot(),
-    // TasksModule,
+    TasksModule,
     AuthModule,
     PostsModule,
     UpdateAppModule,

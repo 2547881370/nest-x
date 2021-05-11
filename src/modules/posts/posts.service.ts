@@ -95,7 +95,7 @@ export class PostsService {
           posts: p.detailedId,
         },
         take: limit,
-        skip: page,
+        skip: limit * (page - 1),
       });
       p.comments = comments;
     }
