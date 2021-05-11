@@ -14,10 +14,10 @@ export class XarticleEntity implements XarticleInterface {
   @PrimaryGeneratedColumn()
   postID: number;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'varchar', length: 8000 })
   title: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'varchar', length: 8000 })
   detail: string;
 
   @Column({ type: 'text', nullable: true })
@@ -92,7 +92,7 @@ export class XarticleEntity implements XarticleInterface {
   images: string[];
 
   @ManyToOne((type) => XuserEntity, (xuser) => xuser.articles, {
-    cascade: true,
+    cascade: false,
     onDelete: 'CASCADE',
   })
   user: XuserEntity;

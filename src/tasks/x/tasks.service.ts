@@ -73,6 +73,8 @@ export class TasksService {
     private readonly XdetailedRepository: Repository<XdetailedEntity>,
     @InjectRepository(XPostsListStartEntity)
     private readonly xPostsListStartEntity: Repository<XPostsListStartEntity>,
+    @InjectRepository(XuserEntity)
+    private readonly xUserEntity: Repository<XuserEntity>,
   ) {}
 
   @Interval(10000)
@@ -168,7 +170,19 @@ export class TasksService {
           await queryRunner.connect();
           await queryRunner.startTransaction();
           try {
+            // 入库用户
+            const userInfo = await this.xUserEntity.findOne({
+              where: {
+                userID: user.userID,
+              },
+            });
+            if (!userInfo) {
+              await this.xUserEntity.save(user);
+            }
+
+            // 入库文章
             await this.xarticleRepository.save(article);
+
             // 入库评论
             // await this.handerPostComment(b.postID, Math.ceil(b.commentCount / 20));
             await this.handerPostComment(b.postID, 1);
