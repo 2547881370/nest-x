@@ -287,7 +287,11 @@ export class TasksService {
             b.posts = detailed;
             return b;
           });
-          await this.XdetailedRepository.save(detailed);
+          try {
+            await this.XdetailedRepository.save(detailed);
+          } catch (err) {
+            this.logger.debug(err);
+          }
           return response.data;
         }),
       )
