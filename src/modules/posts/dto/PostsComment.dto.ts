@@ -1,11 +1,12 @@
-import { IsNumber } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
-import { PostsCollectionStatus } from '../enums/PostsCollection.enum';
+import { IsNumber, IsString } from 'class-validator';
 
-export class PostsCollectionDto {
+export class PostsCommentDto {
   @IsNumber()
   postId: number;
 
   @IsNumber()
   userId: number;
+
+  @IsString()
+  text: string;
 }

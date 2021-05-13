@@ -4,6 +4,7 @@ import { XarticleEntity } from 'src/tasks/x/entity/Xarticle.entity';
 import { XdetailedEntity } from 'src/tasks/x/entity/Xdetailed.entity';
 import { XarticleInterface } from 'src/tasks/x/interface/xarticle.interface';
 import { PostsCollectionDto } from './dto/PostsCollection.dto';
+import { PostsCommentDto } from './dto/PostsComment.dto';
 import { PostsDetailsDto } from './dto/PostsDetails.dto';
 import { PostsPraiseDto } from './dto/PostsPraise.dto';
 import { PostsQueryDto } from './dto/PostsQuery.dto';
@@ -93,5 +94,13 @@ export class PostsController {
   @Get('/getArticleCarouselMap')
   async getArticleCarouselMap(): Promise<XarticleEntity[]> {
     return this.postsService.getArticleCarouselMap();
+  }
+
+  @Swagger.ApiOperation({
+    summary: '新增评论',
+  })
+  @Post('/createPostsComment')
+  async createPostsComment(@Body() request: PostsCommentDto) {
+    return this.postsService.createPostsComment(request);
   }
 }

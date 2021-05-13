@@ -24,27 +24,27 @@ export class XcommentsEntity {
     // cascade: ['insert', 'update', 'remove'],
     onDelete: 'CASCADE',
   })
-  images: string[];
+  images?: string[];
 
-  @Column()
+  @Column({ nullable: true })
   voice: string;
 
-  @Column()
+  @Column({ nullable: true })
   voiceTime: number;
 
-  @Column()
+  @Column({ nullable: true })
   score: number;
 
-  @Column()
+  @Column({ nullable: true })
   scoreTxt: string;
 
-  @Column()
+  @Column({ nullable: true })
   seq: number;
 
   @Column('bigint')
   createTime: number;
 
-  @Column()
+  @Column({ nullable: true })
   state: number;
 
   @ManyToOne(() => XuserEntity, (user) => user.postComment, {
@@ -54,13 +54,13 @@ export class XcommentsEntity {
   })
   user: XuserEntity;
 
-  @Column()
+  @Column({ nullable: true })
   scoreUserCount: number;
 
-  @Column()
+  @Column({ nullable: true })
   scorecount: number;
 
-  @Column()
+  @Column({ nullable: true })
   praise: number;
 
   @ManyToOne((type) => XdetailedEntity, (detailed) => detailed.comments, {

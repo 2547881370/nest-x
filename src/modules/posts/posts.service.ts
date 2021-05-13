@@ -20,6 +20,7 @@ import {
 } from './dto/PostsUserCollection.dto';
 import { XpraiseEntity } from 'src/tasks/x/entity/Xpraise.entity';
 import { PostsPraiseStatus } from './enums/PostsPraise.enum';
+import { PostsCommentDto } from './dto/PostsComment.dto';
 
 @Injectable()
 export class PostsService {
@@ -312,5 +313,39 @@ export class PostsService {
     };
     const find = await this.xarticleRepository.find(queryForm);
     return find;
+  }
+
+  async createPostsComment(options: PostsCommentDto) {
+    const { postId, userId, text } = options;
+
+    const user = await this.xuserRepository.findOne({
+      where: {
+        userID: userId,
+      },
+    });
+
+    const posts = await this.XdetailedRepository.findOne({
+      relations: ['posts', 'comments'],
+      where: {
+        posts: postId,
+      },
+    });
+
+    if (user == null || posts == null) {
+      throw new ForbiddenException({
+        code: HttpStatus.UNAUTHORIZED,
+        message: '参数异常',
+      });
+    }
+
+    const comments = new XcommentsEntity();
+    comments.user = user;
+    comments.posts = posts;
+    comments.text = text;
+    comments.createTime = Date.now();
+
+    const res = await this.xcommentsEntity.save(comments);
+
+    return res;
   }
 }
