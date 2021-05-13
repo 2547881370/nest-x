@@ -1,6 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { XarticleEntity } from './Xarticle.entity';
+import { XcollectionEntity } from './Xcollection.entity';
 import { XcommentsEntity } from './Xcomments.entity';
+import { XpraiseEntity } from './Xpraise.entity';
 
 @Entity()
 export class XuserEntity {
@@ -64,4 +66,10 @@ export class XuserEntity {
     onDelete: 'CASCADE',
   })
   postComment: XcommentsEntity[];
+
+  @OneToMany((type) => XpraiseEntity, (ximage) => ximage.user)
+  praiseId?: XpraiseEntity;
+
+  @OneToMany((type) => XcollectionEntity, (collection) => collection.user)
+  collectionId?: XcollectionEntity;
 }

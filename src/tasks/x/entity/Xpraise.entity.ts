@@ -9,16 +9,16 @@ import { XuserEntity } from './Xuser.entity';
 import { XarticleEntity } from './Xarticle.entity';
 
 @Entity()
-export class XcollectionEntity {
+export class XpraiseEntity {
   @PrimaryGeneratedColumn()
-  collectionId: number;
+  praiseId: number;
 
-  @ManyToOne((type) => XuserEntity, (xuser) => xuser.collectionId, {
+  @ManyToOne((type) => XuserEntity, (xuser) => xuser.praiseId, {
     onDelete: 'CASCADE',
   })
   user: XuserEntity;
 
-  @ManyToOne((type) => XarticleEntity, (xarticle) => xarticle.collectionId, {
+  @ManyToOne((type) => XarticleEntity, (xarticle) => xarticle.praiseId, {
     onDelete: 'CASCADE',
   })
   posts: XarticleEntity;

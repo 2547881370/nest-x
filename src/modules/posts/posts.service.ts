@@ -14,7 +14,12 @@ import { PostsCollectionDto } from './dto/PostsCollection.dto';
 import { XcollectionEntity } from 'src/tasks/x/entity/Xcollection.entity';
 import { PostsCollectionStatus } from './enums/PostsCollection.enum';
 import { XuserEntity } from 'src/tasks/x/entity/Xuser.entity';
-import { PostsUserCollectionDto } from './dto/PostsUserCollection.dto';
+import {
+  PostsUserCollectionDto,
+  PostsUserCollectionOneDto,
+} from './dto/PostsUserCollection.dto';
+import { XpraiseEntity } from 'src/tasks/x/entity/Xpraise.entity';
+import { PostsPraiseStatus } from './enums/PostsPraise.enum';
 
 @Injectable()
 export class PostsService {
@@ -29,6 +34,8 @@ export class PostsService {
     private readonly xcollectionEntity: Repository<XcollectionEntity>,
     @InjectRepository(XuserEntity)
     private readonly xuserRepository: Repository<XuserEntity>,
+    @InjectRepository(XpraiseEntity)
+    private readonly xpraiseRepository: Repository<XpraiseEntity>,
   ) {}
 
   async list(options: PostsQueryDto) {
@@ -119,33 +126,95 @@ export class PostsService {
   }
 
   async addPraise(options: PostsPraiseDto) {
-    const { postId, count } = options;
+    const { postId, userId, status } = options;
+    const p = await this.xpraiseRepository.findOne({
+      where: {
+        posts: postId,
+        user: userId,
+      },
+    });
 
-    const article = await this.xarticleRepository.findOne({
+    if (p && status === PostsPraiseStatus.create) {
+      throw new ForbiddenException({
+        code: HttpStatus.UNAUTHORIZED,
+        message: '已经点赞过了,请勿重复点赞',
+      });
+    }
+
+    const post = await this.xarticleRepository.findOne({
       relations: ['user'],
       where: {
         postID: postId,
       },
     });
 
-    if (!article) {
-      throw new ForbiddenException({
-        code: HttpStatus.UNAUTHORIZED,
-        message: '参数异常',
+    if (status === PostsPraiseStatus.create) {
+      const praise = new XpraiseEntity();
+
+      const user = await this.xuserRepository.findOne({
+        where: {
+          userID: userId,
+        },
       });
+      praise.posts = post;
+      praise.user = user;
+
+      await getConnection()
+        .createQueryBuilder()
+        .update(XarticleEntity)
+        .set({
+          praise: post.praise + 1,
+          activeTime: Date.now(),
+        })
+        .where('postID = :postID', { postID: postId })
+        .execute();
+
+      const isStatus = await this.xpraiseRepository.save(praise);
+      return isStatus;
+    } else {
+      const p = await getConnection()
+        .createQueryBuilder()
+        .delete()
+        .from(XpraiseEntity)
+        .where('posts = :posts', { posts: postId })
+        .andWhere('user = :user', { user: userId })
+        .execute();
+
+      await getConnection()
+        .createQueryBuilder()
+        .update(XarticleEntity)
+        .set({
+          praise: post.praise - 1,
+          activeTime: Date.now(),
+        })
+        .where('postID = :postID', { postID: postId })
+        .execute();
+
+      return p.affected;
     }
+  }
 
-    const p = await getConnection()
-      .createQueryBuilder()
-      .update(XarticleEntity)
-      .set({
-        praise: article.praise + count,
-        activeTime: Date.now(),
-      })
-      .where('postID = :postID', { postID: postId })
-      .execute();
+  async queryUserPraiseList(options: PostsUserCollectionDto) {
+    const { userId } = options;
+    const p = await this.xpraiseRepository.find({
+      relations: ['posts', 'user'],
+      where: {
+        user: userId,
+      },
+    });
+    return p;
+  }
 
-    return p.affected;
+  async queryUserPraiseOne(options: PostsUserCollectionOneDto) {
+    const { userId, postId } = options;
+    const p = await this.xpraiseRepository.findOne({
+      relations: ['posts', 'user'],
+      where: {
+        user: userId,
+        posts: postId,
+      },
+    });
+    return p;
   }
 
   async collection(options: PostsCollectionDto) {
@@ -197,12 +266,24 @@ export class PostsService {
     }
   }
 
-  async queryUserCollection(options: PostsUserCollectionDto) {
+  async queryUserCollectionList(options: PostsUserCollectionDto) {
     const { userId } = options;
     const p = await this.xcollectionEntity.find({
       relations: ['posts', 'user'],
       where: {
         user: userId,
+      },
+    });
+    return p;
+  }
+
+  async queryUserCollectionOne(options: PostsUserCollectionOneDto) {
+    const { userId, postId } = options;
+    const p = await this.xcollectionEntity.findOne({
+      relations: ['posts', 'user'],
+      where: {
+        user: userId,
+        posts: postId,
       },
     });
     return p;

@@ -8,6 +8,8 @@ import {
 import { XimageEntity } from './Ximage.entity';
 import { XuserEntity } from './Xuser.entity';
 import { XarticleInterface } from '../interface/xarticle.interface';
+import { XpraiseEntity } from './Xpraise.entity';
+import { XcollectionEntity } from './Xcollection.entity';
 
 @Entity()
 export class XarticleEntity implements XarticleInterface {
@@ -96,4 +98,10 @@ export class XarticleEntity implements XarticleInterface {
     onDelete: 'CASCADE',
   })
   user: XuserEntity;
+
+  @OneToMany((type) => XpraiseEntity, (praise) => praise.posts)
+  praiseId?: XpraiseEntity;
+
+  @OneToMany((type) => XcollectionEntity, (collection) => collection.posts)
+  collectionId?: XcollectionEntity;
 }
