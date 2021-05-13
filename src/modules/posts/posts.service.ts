@@ -2,7 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { XarticleEntity } from 'src/tasks/x/entity/Xarticle.entity';
 import { XdetailedEntity } from 'src/tasks/x/entity/Xdetailed.entity';
-import { Repository } from 'typeorm';
+import { createConnection, Like, Repository } from 'typeorm';
 import { PostsDetailsDto } from './dto/PostsDetails.dto';
 import { PostsQueryDto } from './dto/PostsQuery.dto';
 import { SortBy, TagId } from './enums/PostsQuery.enum';
@@ -46,6 +46,7 @@ export class PostsService {
       page = 1,
       tag_id = TagId.arr,
       sort_by = SortBy.activeTime,
+      title,
     } = options;
 
     let queryForm = {
@@ -67,13 +68,26 @@ export class PostsService {
       });
     }
 
+    let where = {};
+
     if (tag_id !== TagId.arr) {
-      queryForm = Object.assign(queryForm, {
-        where: { tagid: tag_id },
+      where = Object.assign(where, {
+        tagid: tag_id,
       });
     }
 
-    const find = await this.xarticleRepository.find(queryForm);
+    if (title != null && title != '') {
+      where = Object.assign(where, {
+        title: Like(`%${title}%`),
+      });
+    }
+
+    queryForm = Object.assign(queryForm, {
+      where,
+    });
+
+    const connection = await getConnection();
+    const find = await connection.getRepository(XarticleEntity).find(queryForm);
 
     return find;
   }

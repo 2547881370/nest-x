@@ -7,3 +7,8 @@ export class UserDto {
   @IsString()
   readonly password: string;
 }
+
+export class HeadersToken {
+  @IsString()
+  token: string;
+}

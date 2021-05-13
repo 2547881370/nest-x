@@ -1,8 +1,12 @@
-import { IsNumber } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { SortBy, TagId } from '../enums/PostsQuery.enum';
 
 export class PostsQueryDto {
+  @IsString()
+  @ApiProperty({ description: '文章名称' })
+  title: string;
+
   @IsNumber()
   @ApiProperty({ description: '数量' })
   limit: number;

@@ -16,6 +16,7 @@ import { map } from 'rxjs/operators';
 import { XcommentsEntity } from './entity/Xcomments.entity';
 import { XdetailedEntity } from './entity/Xdetailed.entity';
 import { XPostsListStartEntity } from './entity/XpostsListStart.entity';
+import { Utils } from 'src/common/public';
 
 @Injectable()
 export class TasksService {
@@ -202,7 +203,7 @@ export class TasksService {
   async downloadPic(src: string) {
     try {
       return new Promise<void>(async (_resolve) => {
-        this._mkdirSync(this.dstpath);
+        Utils.mkdirSync(this.dstpath);
         const obs = await this.httpService.get(src, { responseType: 'stream' });
         obs.subscribe(async (x) => {
           const target_path = resolve(
@@ -215,18 +216,6 @@ export class TasksService {
     } catch (err) {
       this.logger.error(err);
     }
-  }
-
-  _mkdirSync(_path) {
-    if (existsSync(_path)) {
-      return true;
-    } else {
-      if (this._mkdirSync(dirname(_path))) {
-        mkdirSync(_path);
-        return true;
-      }
-    }
-    return false;
   }
 
   async handerPostComment(postId: number, pageNo: number): Promise<any> {
