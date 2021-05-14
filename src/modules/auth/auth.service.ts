@@ -3,8 +3,9 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { XuserEntity } from 'src/tasks/x/entity/Xuser.entity';
 import { Repository } from 'typeorm';
-import { UserDto } from './dto/user.dto';
+import { UserDto, UserNameDto } from './dto/user.dto';
 import { ForbiddenException } from '../../common/exception/forbidden.exception';
+import { FileUploadDto } from '../file/dto/file.upload.dto';
 
 type CreateUserType = XuserEntity;
 
@@ -106,6 +107,25 @@ export class AuthService {
     const isHanderCreateUser = await this.xuserRepository.save(user);
     if (isHanderCreateUser) {
       return isHanderCreateUser;
+    }
+  }
+
+  async updateUsername(options: UserNameDto) {
+    const { username, userID } = options;
+
+    const user = await this.xuserRepository.findOne({
+      where: {
+        userID,
+      },
+    });
+    if (user) {
+      user.username = username;
+      return this.xuserRepository.save(user);
+    } else {
+      throw new ForbiddenException({
+        code: HttpStatus.UNAUTHORIZED,
+        message: '参数异常',
+      });
     }
   }
 }

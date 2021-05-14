@@ -7,6 +7,7 @@ import { resolve } from 'path';
 import { AuthModule } from './modules/auth/auth.module';
 import { PostsModule } from './modules/posts/posts.module';
 import { UpdateAppModule } from './modules/update-app/update-app.module';
+import { FileModule } from './modules/file/file.module';
 @Module({
   imports: [
     ConfigModule.load(resolve(__dirname, 'config', '**/!(*.d).{ts,js}')),
@@ -19,8 +20,8 @@ import { UpdateAppModule } from './modules/update-app/update-app.module';
     AuthModule,
     PostsModule,
     UpdateAppModule,
+    FileModule,
   ],
-  controllers: [],
   providers: [],
 })
 export class AppModule {}

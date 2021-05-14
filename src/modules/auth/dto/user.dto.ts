@@ -1,4 +1,4 @@
-import { IsString } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 
 export class UserDto {
   @IsString()
@@ -11,4 +11,12 @@ export class UserDto {
 export class HeadersToken {
   @IsString()
   token: string;
+}
+
+export class UserNameDto {
+  @IsString()
+  readonly username: string;
+
+  @IsNumber()
+  readonly userID: number;
 }
