@@ -98,6 +98,7 @@ export class XarticleEntity implements XarticleInterface {
   @ManyToOne((type) => XuserEntity, (xuser) => xuser.articles, {
     cascade: false,
     onDelete: 'CASCADE',
+    eager: true,
   })
   user: XuserEntity;
 
