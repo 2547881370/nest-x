@@ -10,6 +10,7 @@ import { XuserEntity } from './Xuser.entity';
 import { XarticleInterface } from '../interface/xarticle.interface';
 import { XpraiseEntity } from './Xpraise.entity';
 import { XcollectionEntity } from './Xcollection.entity';
+import { Xhistory } from './Xhistory.entity';
 
 @Entity()
 export class XarticleEntity implements XarticleInterface {
@@ -90,6 +91,7 @@ export class XarticleEntity implements XarticleInterface {
     cascade: true,
     // cascade: ['insert', 'update', 'remove'],
     onDelete: 'CASCADE',
+    eager: true,
   })
   images: string[];
 
@@ -100,8 +102,11 @@ export class XarticleEntity implements XarticleInterface {
   user: XuserEntity;
 
   @OneToMany((type) => XpraiseEntity, (praise) => praise.posts)
-  praiseId?: XpraiseEntity;
+  praiseId?: XpraiseEntity[];
 
   @OneToMany((type) => XcollectionEntity, (collection) => collection.posts)
-  collectionId?: XcollectionEntity;
+  collectionId?: XcollectionEntity[];
+
+  @OneToMany((type) => Xhistory, (collection) => collection.posts)
+  historyId?: Xhistory[];
 }

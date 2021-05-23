@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { XarticleEntity } from './Xarticle.entity';
 import { XcollectionEntity } from './Xcollection.entity';
 import { XcommentsEntity } from './Xcomments.entity';
+import { Xhistory } from './Xhistory.entity';
 import { XpraiseEntity } from './Xpraise.entity';
 
 @Entity()
@@ -68,8 +69,11 @@ export class XuserEntity {
   postComment: XcommentsEntity[];
 
   @OneToMany((type) => XpraiseEntity, (ximage) => ximage.user)
-  praiseId?: XpraiseEntity;
+  praiseId?: XpraiseEntity[];
 
   @OneToMany((type) => XcollectionEntity, (collection) => collection.user)
-  collectionId?: XcollectionEntity;
+  collectionId?: XcollectionEntity[];
+
+  @OneToMany((type) => Xhistory, (ximage) => ximage.user)
+  historyId?: Xhistory[];
 }

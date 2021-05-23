@@ -1,11 +1,27 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+  Request,
+  Headers,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import * as Swagger from '@nestjs/swagger';
+import { ApiHeader } from '@nestjs/swagger';
 import { XarticleEntity } from 'src/tasks/x/entity/Xarticle.entity';
 import { XdetailedEntity } from 'src/tasks/x/entity/Xdetailed.entity';
 import { XarticleInterface } from 'src/tasks/x/interface/xarticle.interface';
 import { PostsCollectionDto } from './dto/PostsCollection.dto';
 import { PostsCommentDto } from './dto/PostsComment.dto';
 import { PostsDetailsDto } from './dto/PostsDetails.dto';
+import {
+  PostsHistoryListtDto,
+  PostsHistorytDto,
+} from './dto/postsHistoryt.dto';
 import { PostsPraiseDto } from './dto/PostsPraise.dto';
 import { PostsQueryDto } from './dto/PostsQuery.dto';
 import {
@@ -16,6 +32,11 @@ import { PostsDetailsEntitle } from './entities/PostsDetails.entitle';
 import { PostsQueryEntitie } from './entities/PostsQuery.entitle';
 import { PostsService } from './posts.service';
 
+@ApiHeader({
+  name: 'token',
+  description: 'Auth token',
+})
+@UseGuards(AuthGuard('jwt'))
 @Swagger.ApiBearerAuth()
 @Swagger.ApiTags('posts')
 @Controller('posts')
@@ -36,8 +57,11 @@ export class PostsController {
     status: 200,
     type: PostsDetailsEntitle,
   })
-  async details(@Body() request: PostsDetailsDto): Promise<XdetailedEntity> {
-    return this.postsService.details(request);
+  async details(
+    @Body() request: PostsDetailsDto,
+    @Headers('token') token: string,
+  ): Promise<XdetailedEntity> {
+    return this.postsService.details(request, token);
   }
 
   @Swagger.ApiOperation({
@@ -102,5 +126,21 @@ export class PostsController {
   @Post('/createPostsComment')
   async createPostsComment(@Body() request: PostsCommentDto) {
     return this.postsService.createPostsComment(request);
+  }
+
+  @Swagger.ApiOperation({
+    summary: '历史记录',
+  })
+  @Post('/history')
+  async history(@Body() request: PostsHistorytDto) {
+    return this.postsService.history(request);
+  }
+
+  @Swagger.ApiOperation({
+    summary: '获取历史记录列表',
+  })
+  @Post('/queryHistoryList')
+  async queryHistoryList(@Body() request: PostsHistoryListtDto) {
+    return this.postsService.queryHistoryList(request);
   }
 }

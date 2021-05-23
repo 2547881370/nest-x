@@ -18,8 +18,6 @@ export class AuthService {
   ) {}
 
   async login(user: UserDto): Promise<any> {
-    const payload = { username: user.username, sub: user.password };
-
     if (!user.password || !user.username) {
       throw new ForbiddenException({
         code: HttpStatus.UNAUTHORIZED,
@@ -41,6 +39,7 @@ export class AuthService {
       });
     }
 
+    const payload = { username: p.username, sub: p.userID };
     return {
       token: this.jwtService.sign(payload),
       ...p,

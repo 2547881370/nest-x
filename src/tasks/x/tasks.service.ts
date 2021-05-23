@@ -33,7 +33,8 @@ export class TasksService {
       '[w]00:81:0e:1b:c4:b0-[i]865166021747665-[s]89860037810647646094',
     count: 20,
     // 频道
-    cat_id: 56,
+    // cat_id: 56,
+    cat_id: 29,
     // 类型: 全部0 ; 原创5601 ' 网络5602  == 对应真实字段tagid
     tag_id: 0,
     // 排序: 回复时间0 ;按发布时间 1 ;  按版本精华2 == 对应真实字段createTime和activeTime
@@ -125,7 +126,7 @@ export class TasksService {
           let article = new XarticleEntity();
 
           user = Object.assign(b.user, {
-            username: TasksService.USER.username,
+            username: b.user.nick,
             password: TasksService.USER.password,
           });
 
@@ -239,7 +240,7 @@ export class TasksService {
           let post = new XarticleEntity();
           let postUser = new XuserEntity();
           postUser = Object.assign(response.data.post.user, {
-            username: TasksService.USER.username,
+            username: response.data.post.user.nick,
             password: TasksService.USER.password,
           });
           post = response.data.post;
@@ -262,7 +263,7 @@ export class TasksService {
             }
             let user = new XuserEntity();
             user = Object.assign(b.user, {
-              username: TasksService.USER.username,
+              username: b.user.nick,
               password: TasksService.USER.password,
             });
             comment.user = user;

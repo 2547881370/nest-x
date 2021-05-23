@@ -2,7 +2,12 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { XarticleEntity } from 'src/tasks/x/entity/Xarticle.entity';
 import { XdetailedEntity } from 'src/tasks/x/entity/Xdetailed.entity';
-import { createConnection, Like, Repository } from 'typeorm';
+import {
+  createConnection,
+  createQueryBuilder,
+  Like,
+  Repository,
+} from 'typeorm';
 import { PostsDetailsDto } from './dto/PostsDetails.dto';
 import { PostsQueryDto } from './dto/PostsQuery.dto';
 import { SortBy, TagId } from './enums/PostsQuery.enum';
@@ -21,10 +26,18 @@ import {
 import { XpraiseEntity } from 'src/tasks/x/entity/Xpraise.entity';
 import { PostsPraiseStatus } from './enums/PostsPraise.enum';
 import { PostsCommentDto } from './dto/PostsComment.dto';
+import {
+  PostsHistoryListtDto,
+  PostsHistorytDto,
+} from './dto/postsHistoryt.dto';
+import { Xhistory } from 'src/tasks/x/entity/Xhistory.entity';
+import { PostsHistoryStatus } from './enums/postsHistoryStatus.enum';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class PostsService {
   constructor(
+    private readonly jwtService: JwtService,
     @InjectRepository(XarticleEntity)
     private readonly xarticleRepository: Repository<XarticleEntity>,
     @InjectRepository(XdetailedEntity)
@@ -37,6 +50,8 @@ export class PostsService {
     private readonly xuserRepository: Repository<XuserEntity>,
     @InjectRepository(XpraiseEntity)
     private readonly xpraiseRepository: Repository<XpraiseEntity>,
+    @InjectRepository(Xhistory)
+    private readonly xhistoryRepository: Repository<Xhistory>,
   ) {}
 
   async list(options: PostsQueryDto) {
@@ -93,7 +108,7 @@ export class PostsService {
     return find;
   }
 
-  async details(options: PostsDetailsDto) {
+  async details(options: PostsDetailsDto, token: string) {
     const { postId, limit = 20, page = 1 } = options;
     if (postId === undefined || postId === null) {
       throw new ForbiddenException({
@@ -130,12 +145,13 @@ export class PostsService {
     });
     p.posts = find;
 
-    await getConnection()
-      .createQueryBuilder()
-      .update(XarticleEntity)
-      .set({ hit: find.hit + 1 })
-      .where('postID = :postID', { postID: postId })
-      .execute();
+    const decryptToken = this.jwtService.verify(token);
+
+    await this.history({
+      postId: postId,
+      userId: decryptToken.sub,
+      status: PostsHistoryStatus.create,
+    });
 
     return p;
   }
@@ -210,13 +226,29 @@ export class PostsService {
   }
 
   async queryUserPraiseList(options: PostsUserCollectionDto) {
-    const { userId } = options;
-    const p = await this.xpraiseRepository.find({
+    const { userId, title, limit, page } = options;
+
+    let queryForm = {
       relations: ['posts', 'user'],
-      where: {
-        user: userId,
-      },
+      take: limit,
+      skip: limit * (page - 1),
+    };
+
+    let where = {
+      user: userId,
+    };
+
+    if (title != null && title != '') {
+      where = Object.assign(where, {
+        title: Like(`%${title}%`),
+      });
+    }
+
+    queryForm = Object.assign(queryForm, {
+      where,
     });
+
+    const p = await this.xpraiseRepository.find(queryForm);
     return p;
   }
 
@@ -282,13 +314,30 @@ export class PostsService {
   }
 
   async queryUserCollectionList(options: PostsUserCollectionDto) {
-    const { userId } = options;
-    const p = await this.xcollectionEntity.find({
+    const { userId, title, limit, page } = options;
+
+    let queryForm = {
       relations: ['posts', 'user'],
-      where: {
-        user: userId,
-      },
+      take: limit,
+      skip: limit * (page - 1),
+    };
+
+    let where = {
+      user: userId,
+    };
+
+    if (title != null && title != '') {
+      where = Object.assign(where, {
+        title: Like(`%${title}%`),
+      });
+    }
+
+    queryForm = Object.assign(queryForm, {
+      where,
     });
+
+    const p = await this.xcollectionEntity.find(queryForm);
+
     return p;
   }
 
@@ -347,5 +396,77 @@ export class PostsService {
     const res = await this.xcommentsEntity.save(comments);
 
     return res;
+  }
+
+  async history(options: PostsHistorytDto) {
+    const { userId, postId, status } = options;
+
+    if (status === PostsHistoryStatus.create) {
+      const find = await this.xarticleRepository.findOne({
+        relations: ['user', 'images'],
+        where: {
+          postID: postId,
+        },
+      });
+
+      const user = await this.xuserRepository.findOne({
+        where: {
+          userID: userId,
+        },
+      });
+
+      // 浏览记录增加
+      await getConnection()
+        .createQueryBuilder()
+        .update(XarticleEntity)
+        .set({ hit: find.hit + 1 })
+        .where('postID = :postID', { postID: postId })
+        .execute();
+
+      // 历史库表是否存在当前记录
+      const _xhistory = await this.xhistoryRepository.findOne({
+        where: {
+          posts: postId,
+          user: userId,
+        },
+      });
+
+      // 存在, 更新时间
+      if (_xhistory) {
+        _xhistory.createTime = Date.now();
+        return await this.xhistoryRepository.save(_xhistory);
+      }
+
+      // 浏览历史入库
+      const xhistory = new Xhistory();
+      xhistory.posts = find;
+      xhistory.user = user;
+      xhistory.createTime = Date.now();
+      return await this.xhistoryRepository.save(xhistory);
+    } else {
+      // 删除记录
+      const xhistory = await this.xhistoryRepository.findOne({
+        where: {
+          posts: postId,
+          user: userId,
+        },
+      });
+      return await this.xhistoryRepository.remove(xhistory);
+    }
+  }
+
+  async queryHistoryList(options: PostsHistoryListtDto) {
+    const { userId, limit, page } = options;
+
+    const queryForm = {
+      relations: ['posts', 'user'],
+      take: limit,
+      skip: limit * (page - 1),
+      where: {
+        user: userId,
+      },
+    };
+
+    return await this.xhistoryRepository.find(queryForm);
   }
 }
