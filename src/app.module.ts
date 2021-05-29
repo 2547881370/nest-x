@@ -16,7 +16,7 @@ import { FileModule } from './modules/file/file.module';
       inject: [ConfigService],
     }),
     ScheduleModule.forRoot(),
-    // TasksModule,
+    TasksModule,
     AuthModule,
     PostsModule,
     UpdateAppModule,

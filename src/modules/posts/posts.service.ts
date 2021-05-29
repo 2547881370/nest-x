@@ -330,6 +330,9 @@ export class PostsService {
 
     queryForm = Object.assign(queryForm, {
       where,
+      order: {
+        createTime: 'DESC',
+      },
     });
 
     const p = await this.xpraiseRepository.find(queryForm);
@@ -419,6 +422,9 @@ export class PostsService {
 
     queryForm = Object.assign(queryForm, {
       where,
+      order: {
+        createTime: 'DESC',
+      },
     });
 
     const p = await this.xcollectionEntity.find(queryForm);
@@ -573,6 +579,9 @@ export class PostsService {
       skip: limit * (page - 1),
       where: {
         user: userId,
+        order: {
+          createTime: 'DESC',
+        },
       },
     };
 
