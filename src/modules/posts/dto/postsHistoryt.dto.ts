@@ -1,17 +1,27 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString } from 'class-validator';
-import { PostsHistoryStatus } from '../enums/postsHistoryStatus.enum';
+import { IsNumber, IsString, IsArray } from 'class-validator';
+import {
+  PostsHistoryDeleteArrStatus,
+  PostsHistoryStatus,
+} from '../enums/postsHistoryStatus.enum';
 
 export class PostsHistorytDto {
-  @IsNumber()
-  postId: number;
+  @IsArray()
+  postIds: number[];
 
   @IsNumber()
   userId: number;
 
+  @IsArray()
+  historyIDs?: number[];
+
   @ApiProperty({ description: '1 新增浏览记录 , 0 删除浏览记录' })
   @IsNumber()
   status: PostsHistoryStatus;
+
+  @ApiProperty({ description: '1全部删除' })
+  @IsNumber()
+  arrDelete?: PostsHistoryDeleteArrStatus;
 }
 
 export class PostsHistoryListtDto {

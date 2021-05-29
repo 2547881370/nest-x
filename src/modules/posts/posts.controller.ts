@@ -15,14 +15,17 @@ import { ApiHeader } from '@nestjs/swagger';
 import { XarticleEntity } from 'src/tasks/x/entity/Xarticle.entity';
 import { XdetailedEntity } from 'src/tasks/x/entity/Xdetailed.entity';
 import { XarticleInterface } from 'src/tasks/x/interface/xarticle.interface';
-import { PostsCollectionDto } from './dto/PostsCollection.dto';
+import {
+  PostsCollectionDto,
+  PostsDeleteCollectionDto,
+} from './dto/PostsCollection.dto';
 import { PostsCommentDto } from './dto/PostsComment.dto';
 import { PostsDetailsDto } from './dto/PostsDetails.dto';
 import {
   PostsHistoryListtDto,
   PostsHistorytDto,
 } from './dto/postsHistoryt.dto';
-import { PostsPraiseDto } from './dto/PostsPraise.dto';
+import { PostsPraiseDto, PostsRemovePraiseDto } from './dto/PostsPraise.dto';
 import { PostsQueryDto } from './dto/PostsQuery.dto';
 import {
   PostsUserCollectionDto,
@@ -73,6 +76,14 @@ export class PostsController {
   }
 
   @Swagger.ApiOperation({
+    summary: '删除用户点赞',
+  })
+  @Post('/deletePraise')
+  async deletePraise(@Body() request: PostsRemovePraiseDto) {
+    return this.postsService.deletePraise(request);
+  }
+
+  @Swagger.ApiOperation({
     summary: '获取用户点赞列表',
   })
   @Post('/queryUserPraiseList')
@@ -94,6 +105,14 @@ export class PostsController {
   @Post('/collection')
   async collection(@Body() request: PostsCollectionDto) {
     return this.postsService.collection(request);
+  }
+
+  @Swagger.ApiOperation({
+    summary: '用户删除收藏',
+  })
+  @Post('/deleteCollection')
+  async deleteCollection(@Body() request: PostsDeleteCollectionDto) {
+    return this.postsService.deleteCollection(request);
   }
 
   @Swagger.ApiOperation({

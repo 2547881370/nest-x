@@ -4,6 +4,7 @@ import {
   OneToOne,
   JoinColumn,
   ManyToOne,
+  Column,
 } from 'typeorm';
 import { XuserEntity } from './Xuser.entity';
 import { XarticleEntity } from './Xarticle.entity';
@@ -12,6 +13,9 @@ import { XarticleEntity } from './Xarticle.entity';
 export class XcollectionEntity {
   @PrimaryGeneratedColumn()
   collectionId: number;
+
+  @Column('bigint')
+  createTime: number;
 
   @ManyToOne((type) => XuserEntity, (xuser) => xuser.collectionId, {
     onDelete: 'CASCADE',

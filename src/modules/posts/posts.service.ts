@@ -13,9 +13,12 @@ import { PostsQueryDto } from './dto/PostsQuery.dto';
 import { SortBy, TagId } from './enums/PostsQuery.enum';
 import { ForbiddenException } from '../../common/exception/forbidden.exception';
 import { XcommentsEntity } from 'src/tasks/x/entity/Xcomments.entity';
-import { PostsPraiseDto } from './dto/PostsPraise.dto';
+import { PostsPraiseDto, PostsRemovePraiseDto } from './dto/PostsPraise.dto';
 import { getConnection } from 'typeorm';
-import { PostsCollectionDto } from './dto/PostsCollection.dto';
+import {
+  PostsCollectionDto,
+  PostsDeleteCollectionDto,
+} from './dto/PostsCollection.dto';
 import { XcollectionEntity } from 'src/tasks/x/entity/Xcollection.entity';
 import { PostsCollectionStatus } from './enums/PostsCollection.enum';
 import { XuserEntity } from 'src/tasks/x/entity/Xuser.entity';
@@ -24,14 +27,20 @@ import {
   PostsUserCollectionOneDto,
 } from './dto/PostsUserCollection.dto';
 import { XpraiseEntity } from 'src/tasks/x/entity/Xpraise.entity';
-import { PostsPraiseStatus } from './enums/PostsPraise.enum';
+import {
+  PostsPraiseDeleteArrStatus,
+  PostsPraiseStatus,
+} from './enums/PostsPraise.enum';
 import { PostsCommentDto } from './dto/PostsComment.dto';
 import {
   PostsHistoryListtDto,
   PostsHistorytDto,
 } from './dto/postsHistoryt.dto';
 import { Xhistory } from 'src/tasks/x/entity/Xhistory.entity';
-import { PostsHistoryStatus } from './enums/postsHistoryStatus.enum';
+import {
+  PostsHistoryDeleteArrStatus,
+  PostsHistoryStatus,
+} from './enums/postsHistoryStatus.enum';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
@@ -148,7 +157,7 @@ export class PostsService {
     const decryptToken = this.jwtService.verify(token);
 
     await this.history({
-      postId: postId,
+      postIds: [postId],
       userId: decryptToken.sub,
       status: PostsHistoryStatus.create,
     });
@@ -189,6 +198,7 @@ export class PostsService {
       });
       praise.posts = post;
       praise.user = user;
+      praise.createTime = Date.now();
 
       await getConnection()
         .createQueryBuilder()
@@ -223,6 +233,80 @@ export class PostsService {
 
       return p.affected;
     }
+  }
+
+  async deletePraise(options: PostsRemovePraiseDto) {
+    const { userId, praiseIds, arrDelete } = options;
+
+    let where = {};
+    if (praiseIds) {
+      where = options.praiseIds.map((b) => {
+        return {
+          praiseId: b,
+        };
+      });
+    }
+
+    // 全部删除
+    if (
+      arrDelete != null &&
+      arrDelete != undefined &&
+      arrDelete === PostsPraiseDeleteArrStatus.arr
+    ) {
+      where = {
+        user: userId,
+      };
+    }
+
+    if (Object.keys(where).length === 0) {
+      throw new ForbiddenException({
+        code: HttpStatus.UNAUTHORIZED,
+        message: '参数异常',
+      });
+    }
+
+    // 删除记录
+    const xpraise = await this.xpraiseRepository.find({
+      where: where,
+    });
+    return await this.xpraiseRepository.remove(xpraise);
+  }
+
+  async deleteCollection(options: PostsDeleteCollectionDto) {
+    const { userId, collectionIds, arrDelete } = options;
+
+    let where = {};
+    if (collectionIds) {
+      where = options.collectionIds.map((b) => {
+        return {
+          collectionId: b,
+        };
+      });
+    }
+
+    // 全部删除
+    if (
+      arrDelete != null &&
+      arrDelete != undefined &&
+      arrDelete === PostsPraiseDeleteArrStatus.arr
+    ) {
+      where = {
+        user: userId,
+      };
+    }
+
+    if (Object.keys(where).length === 0) {
+      throw new ForbiddenException({
+        code: HttpStatus.UNAUTHORIZED,
+        message: '参数异常',
+      });
+    }
+
+    // 删除记录
+    const xcollection = await this.xcollectionEntity.find({
+      where: where,
+    });
+    return await this.xcollectionEntity.remove(xcollection);
   }
 
   async queryUserPraiseList(options: PostsUserCollectionDto) {
@@ -298,6 +382,7 @@ export class PostsService {
       });
       collection.posts = post;
       collection.user = user;
+      collection.createTime = Date.now();
 
       const isStatus = await this.xcollectionEntity.save(collection);
       return isStatus;
@@ -399,13 +484,13 @@ export class PostsService {
   }
 
   async history(options: PostsHistorytDto) {
-    const { userId, postId, status } = options;
+    const { userId, postIds, status } = options;
 
     if (status === PostsHistoryStatus.create) {
       const find = await this.xarticleRepository.findOne({
         relations: ['user', 'images'],
         where: {
-          postID: postId,
+          postID: postIds[0],
         },
       });
 
@@ -420,13 +505,13 @@ export class PostsService {
         .createQueryBuilder()
         .update(XarticleEntity)
         .set({ hit: find.hit + 1 })
-        .where('postID = :postID', { postID: postId })
+        .where('postID = :postID', { postID: postIds[0] })
         .execute();
 
       // 历史库表是否存在当前记录
       const _xhistory = await this.xhistoryRepository.findOne({
         where: {
-          posts: postId,
+          posts: postIds[0],
           user: userId,
         },
       });
@@ -444,12 +529,36 @@ export class PostsService {
       xhistory.createTime = Date.now();
       return await this.xhistoryRepository.save(xhistory);
     } else {
-      // 删除记录
-      const xhistory = await this.xhistoryRepository.findOne({
-        where: {
-          posts: postId,
+      let where = {};
+      if (options.historyIDs) {
+        where = options.historyIDs.map((b) => {
+          return {
+            historyID: b,
+          };
+        });
+      }
+
+      // 全部删除
+      if (
+        options.arrDelete != null &&
+        options.arrDelete != undefined &&
+        options.arrDelete === PostsHistoryDeleteArrStatus.arr
+      ) {
+        where = {
           user: userId,
-        },
+        };
+      }
+
+      if (Object.keys(where).length === 0) {
+        throw new ForbiddenException({
+          code: HttpStatus.UNAUTHORIZED,
+          message: '参数异常',
+        });
+      }
+
+      // 删除记录
+      const xhistory = await this.xhistoryRepository.find({
+        where: where,
       });
       return await this.xhistoryRepository.remove(xhistory);
     }
