@@ -75,7 +75,6 @@ export class PostsService {
     } = options;
 
     let queryForm = {
-      relations: ['user', 'images'],
       take: limit,
       skip: limit * (page - 1),
     };
