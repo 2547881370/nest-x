@@ -16,10 +16,10 @@ export class XuserEntity {
   @Column()
   password: string;
 
-  @Column({ default: null, type: 'varchar' })
+  @Column({ default: null, type: 'varchar', nullable: true })
   nick: string;
 
-  @Column({ default: null })
+  @Column({ default: null, nullable: true })
   avatar: string;
 
   @Column({ default: null, type: 'int' })

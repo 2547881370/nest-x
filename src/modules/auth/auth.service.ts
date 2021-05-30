@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { XuserEntity } from 'src/tasks/x/entity/Xuser.entity';
 import { Repository } from 'typeorm';
-import { UserDto, UserNameDto } from './dto/user.dto';
+import { UserDto, UserInfoDto, UserNameDto } from './dto/user.dto';
 import { ForbiddenException } from '../../common/exception/forbidden.exception';
 import { FileUploadDto } from '../file/dto/file.upload.dto';
 
@@ -126,5 +126,15 @@ export class AuthService {
         message: '参数异常',
       });
     }
+  }
+
+  async getUserInfo(params: UserInfoDto) {
+    const p = await this.xuserRepository.findOne({
+      where: {
+        userID: params.userID,
+      },
+    });
+
+    return p;
   }
 }

@@ -573,17 +573,20 @@ export class PostsService {
   async queryHistoryList(options: PostsHistoryListtDto) {
     const { userId, limit, page } = options;
 
-    const queryForm = {
+    let queryForm = {
       relations: ['posts', 'user'],
       take: limit,
       skip: limit * (page - 1),
       where: {
         user: userId,
-        order: {
-          createTime: 'DESC',
-        },
       },
     };
+
+    queryForm = Object.assign(queryForm, {
+      order: {
+        createTime: 'DESC',
+      },
+    });
 
     return await this.xhistoryRepository.find(queryForm);
   }

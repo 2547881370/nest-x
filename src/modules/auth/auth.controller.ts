@@ -7,7 +7,7 @@ import {
   ApiBearerAuth,
   ApiOperation,
 } from '@nestjs/swagger';
-import { UserDto, UserNameDto } from './dto/user.dto';
+import { UserDto, UserInfoDto, UserNameDto } from './dto/user.dto';
 import { UserEntitie } from './entities/user.entitie';
 
 @ApiBearerAuth()
@@ -38,5 +38,13 @@ export class AuthController {
   @Post('/updateUsername')
   async updateUsername(@Body() request: UserNameDto) {
     return this.authService.updateUsername(request);
+  }
+
+  @ApiOperation({
+    summary: '获取用户信息',
+  })
+  @Post('/getUserInfo')
+  async getUserInfo(@Body() request: UserInfoDto) {
+    return this.authService.getUserInfo(request);
   }
 }

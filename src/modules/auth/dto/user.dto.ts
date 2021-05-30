@@ -20,3 +20,8 @@ export class UserNameDto {
   @IsNumber()
   readonly userID: number;
 }
+
+export class UserInfoDto {
+  @IsNumber()
+  readonly userID: number;
+}

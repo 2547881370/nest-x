@@ -17,10 +17,10 @@ export class XarticleEntity implements XarticleInterface {
   @PrimaryGeneratedColumn()
   postID: number;
 
-  @Column({ type: 'varchar', length: 8000 })
+  @Column({ type: 'varchar', length: 8000, nullable: true })
   title: string;
 
-  @Column({ type: 'varchar', length: 8000 })
+  @Column({ type: 'varchar', length: 8000, nullable: true })
   detail: string;
 
   @Column({ type: 'text', nullable: true })
