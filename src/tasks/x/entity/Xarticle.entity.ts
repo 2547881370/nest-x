@@ -4,6 +4,7 @@ import {
   Column,
   OneToMany,
   ManyToOne,
+  Index,
 } from 'typeorm';
 import { XimageEntity } from './Ximage.entity';
 import { XuserEntity } from './Xuser.entity';
@@ -17,6 +18,7 @@ export class XarticleEntity implements XarticleInterface {
   @PrimaryGeneratedColumn()
   postID: number;
 
+  @Index()
   @Column({ type: 'varchar', length: 8000, nullable: true })
   title: string;
 
@@ -51,15 +53,18 @@ export class XarticleEntity implements XarticleInterface {
   @Column('int')
   isGood: number;
 
+  @Index()
   @Column('bigint')
   createTime: number;
 
+  @Index()
   @Column('bigint')
   activeTime: number;
 
   @Column('int')
   line: number;
 
+  @Index()
   @Column('int')
   tagid: number;
 

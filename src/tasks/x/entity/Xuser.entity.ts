@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  Index,
+} from 'typeorm';
 import { XarticleEntity } from './Xarticle.entity';
 import { XcollectionEntity } from './Xcollection.entity';
 import { XcommentsEntity } from './Xcomments.entity';
@@ -10,9 +16,11 @@ export class XuserEntity {
   @PrimaryGeneratedColumn()
   userID: number;
 
+  @Index()
   @Column()
   username: string;
 
+  @Index()
   @Column()
   password: string;
 
