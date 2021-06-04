@@ -74,46 +74,33 @@ export class PostsService {
       title,
     } = options;
 
-    let queryForm = {
-      take: limit,
-      skip: limit * (page - 1),
-    };
+    const connection = getConnection();
+    let find = connection
+      .getRepository(XarticleEntity)
+      .createQueryBuilder('a')
+      .leftJoinAndSelect('a.images', 'images')
+      .leftJoinAndSelect('a.user', 'user');
+
     if (sort_by === SortBy.activeTime) {
-      queryForm = Object.assign(queryForm, {
-        order: {
-          activeTime: 'DESC',
-        },
-      });
+      find = find.orderBy('a.activeTime', 'DESC');
     } else {
-      queryForm = Object.assign(queryForm, {
-        order: {
-          createTime: 'DESC',
-        },
-      });
+      find = find.orderBy('a.createTime', 'DESC');
     }
 
-    let where = {};
-
     if (tag_id !== TagId.arr) {
-      where = Object.assign(where, {
-        tagid: tag_id,
-      });
+      find = find.where('a.tagid = :tagid', { tagid: tag_id });
     }
 
     if (title != null && title != '') {
-      where = Object.assign(where, {
-        title: Like(`%${title}%`),
+      find = find.where('a.title like :title', {
+        title: '%' + title + '%',
       });
     }
 
-    queryForm = Object.assign(queryForm, {
-      where,
-    });
-
-    const connection = await getConnection();
-    const find = await connection.getRepository(XarticleEntity).find(queryForm);
-
-    return find;
+    return await find
+      .limit(limit)
+      .offset(limit * (page - 1))
+      .getMany();
   }
 
   async details(options: PostsDetailsDto, token: string) {
@@ -323,7 +310,7 @@ export class PostsService {
 
     if (title != null && title != '') {
       where = Object.assign(where, {
-        title: Like(`%${title}%`),
+        title: Like(`${title}%`),
       });
     }
 
@@ -415,7 +402,7 @@ export class PostsService {
 
     if (title != null && title != '') {
       where = Object.assign(where, {
-        title: Like(`%${title}%`),
+        title: Like(`${title}%`),
       });
     }
 
