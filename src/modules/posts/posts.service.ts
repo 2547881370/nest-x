@@ -61,7 +61,7 @@ export class PostsService {
     private readonly xpraiseRepository: Repository<XpraiseEntity>,
     @InjectRepository(Xhistory)
     private readonly xhistoryRepository: Repository<Xhistory>,
-  ) {}
+  ) { }
 
   async list(options: PostsQueryDto) {
     // 默认以回复时间排序
@@ -298,31 +298,25 @@ export class PostsService {
   async queryUserPraiseList(options: PostsUserCollectionDto) {
     const { userId, title, limit, page } = options;
 
-    let queryForm = {
-      relations: ['posts', 'user'],
-      take: limit,
-      skip: limit * (page - 1),
-    };
-
-    let where = {
-      user: userId,
-    };
+    const connection = getConnection();
+    let find = connection
+      .getRepository(XpraiseEntity)
+      .createQueryBuilder('praise')
+      .leftJoinAndSelect('praise.posts', 'posts')
+      .leftJoinAndSelect('posts.images', 'images')
+      .leftJoinAndSelect('posts.user', 'postsUser').where({
+        user: userId,
+      }).orderBy('praise.createTime', 'DESC')
 
     if (title != null && title != '') {
-      where = Object.assign(where, {
-        title: Like(`${title}%`),
+      find = find.where('posts.title like :title', {
+        title: '%' + title + '%',
       });
     }
 
-    queryForm = Object.assign(queryForm, {
-      where,
-      order: {
-        createTime: 'DESC',
-      },
-    });
-
-    const p = await this.xpraiseRepository.find(queryForm);
-    return p;
+    return await find.limit(limit)
+      .offset(limit * (page - 1))
+      .getMany();;
   }
 
   async queryUserPraiseOne(options: PostsUserCollectionOneDto) {
@@ -390,32 +384,25 @@ export class PostsService {
   async queryUserCollectionList(options: PostsUserCollectionDto) {
     const { userId, title, limit, page } = options;
 
-    let queryForm = {
-      relations: ['posts', 'user'],
-      take: limit,
-      skip: limit * (page - 1),
-    };
-
-    let where = {
-      user: userId,
-    };
+    const connection = getConnection();
+    let find = connection
+      .getRepository(XcollectionEntity)
+      .createQueryBuilder('collection')
+      .leftJoinAndSelect('collection.posts', 'posts')
+      .leftJoinAndSelect('posts.images', 'images')
+      .leftJoinAndSelect('posts.user', 'postsUser').where({
+        user: userId,
+      }).orderBy('collection.createTime', 'DESC')
 
     if (title != null && title != '') {
-      where = Object.assign(where, {
-        title: Like(`${title}%`),
+      find = find.where('posts.title like :title', {
+        title: '%' + title + '%',
       });
     }
 
-    queryForm = Object.assign(queryForm, {
-      where,
-      order: {
-        createTime: 'DESC',
-      },
-    });
-
-    const p = await this.xcollectionEntity.find(queryForm);
-
-    return p;
+    return await find.limit(limit)
+      .offset(limit * (page - 1))
+      .getMany();;
   }
 
   async queryUserCollectionOne(options: PostsUserCollectionOneDto) {
@@ -559,21 +546,22 @@ export class PostsService {
   async queryHistoryList(options: PostsHistoryListtDto) {
     const { userId, limit, page } = options;
 
-    let queryForm = {
-      relations: ['posts', 'user'],
-      take: limit,
-      skip: limit * (page - 1),
-      where: {
+    const connection = getConnection();
+    let find = connection
+      .getRepository(Xhistory)
+      .createQueryBuilder('history')
+      .leftJoinAndSelect('history.posts', 'posts')
+      .leftJoinAndSelect('posts.images', 'images')
+      .leftJoinAndSelect('posts.user', 'postsUser')
+
+    let p = await find
+      .where({
         user: userId,
-      },
-    };
-
-    queryForm = Object.assign(queryForm, {
-      order: {
-        createTime: 'DESC',
-      },
-    });
-
-    return await this.xhistoryRepository.find(queryForm);
+      })
+      .orderBy('history.createTime', 'DESC')
+      .limit(limit)
+      .offset(limit * (page - 1))
+      .getMany();
+    return p
   }
 }

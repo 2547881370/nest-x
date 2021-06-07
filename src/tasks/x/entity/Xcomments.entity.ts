@@ -16,7 +16,7 @@ export class XcommentsEntity {
   @PrimaryGeneratedColumn()
   commentID: number;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'longtext', nullable: true })
   text: string;
 
   @OneToMany((type) => XimageEntity, (ximage) => ximage.comments, {
